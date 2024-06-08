@@ -1,10 +1,7 @@
-import 'dart:convert';
-
 import 'package:example/config/providers.dart' as providers;
-import 'package:example/features/common/infrastructure/entities/environment.dart';
 import 'package:example/flavors.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -16,12 +13,11 @@ Future<ProviderContainer> bootstrap() async {
     overrides: [], //supabaseProvider.overrideWithValue(Supabase.instance)
     observers: [if (F.appFlavor == Flavor.local) _Logger()],
   );
-  final configFile = await rootBundle.loadString(F.envFileName);
-  final env = Environment.fromJson(json.decode(configFile) as Map<String, dynamic>);
-
+  
+  await dotenv.load();
   await Supabase.initialize(
-    url: env.supabaseUrl,
-    anonKey: env.supabaseAnonKey,
+    url: dotenv.env['supabaseUrl']!,
+    anonKey: dotenv.env['supabaseUrl']!,
   );
   await providers.initializeProviders(container);
   return container;

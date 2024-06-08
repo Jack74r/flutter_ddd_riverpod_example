@@ -1,7 +1,7 @@
 import 'package:example/features/auth/auth_provider.dart';
 import 'package:example/features/auth/domain/entities/user_entity.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:uni_links/uni_links.dart';
+import 'package:app_links/app_links.dart';
 
 part 'auth_controller.g.dart';
 
@@ -9,6 +9,8 @@ part 'auth_controller.g.dart';
 
 @riverpod
 class AuthController extends _$AuthController {
+  final _appLinks = AppLinks();
+
   @override
   FutureOr<UserEntity?> build() async {
     final repository = ref.watch(authRepositoryProvider);
@@ -36,15 +38,18 @@ class AuthController extends _$AuthController {
   ///
   Future<void> _handleInitialDeepLink() async {
     state = const AsyncLoading();
-    final initialLink = await getInitialLink();
+
+    final initialLink = await _appLinks.getInitialLinkString();
     if (!(initialLink?.contains('refresh_token=') ?? false)) {
       return;
     }
 
-    final refreshTokenQueryParam =
-        initialLink?.split('&').firstWhere((element) => element.contains('refresh_token'));
+    final refreshTokenQueryParam = initialLink
+        ?.split('&')
+        .firstWhere((element) => element.contains('refresh_token'));
 
-    final refreshToken = refreshTokenQueryParam?.substring(refreshTokenQueryParam.indexOf('=') + 1);
+    final refreshToken = refreshTokenQueryParam
+        ?.substring(refreshTokenQueryParam.indexOf('=') + 1);
     if (refreshToken == null) return;
 
     final res = await ref.read(authRepositoryProvider).setSession(refreshToken);
